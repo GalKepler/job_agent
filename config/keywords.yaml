@@ -1,0 +1,31 @@
+# config/keywords.yaml
+# Pre-filter applied before the LLM ranker.  Fast, cheap, catches obvious mismatches.
+# Any posting matching an exclude keyword is skipped before hitting the API.
+
+include:
+  - machine learning
+  - ML
+  - data scientist
+  - research scientist
+  - research engineer
+  - biosignal
+  - wearable
+  - neuroimaging
+  - applied scientist
+  - LLM
+  - evaluation
+  - AI engineer
+
+exclude:
+  - intern
+  - internship
+  - graduate program
+  - entry level
+  - junior
+  - "0-2 years"
+  - "1-3 years"
+  - frontend engineer
+  - iOS
+  - Android
+  - devops
+  - site reliability

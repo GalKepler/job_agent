@@ -1,0 +1,18 @@
+{
+  "jobs": [
+    {
+      "id": 200666013,
+      "title": "Interdisciplinary Researcher",
+      "location": {"name": "Cupertino, CA"},
+      "absolute_url": "https://jobs.apple.com/en-us/details/200666013",
+      "content": "<p>Join Apple's research team to develop next-generation sensing and health technologies.</p>"
+    },
+    {
+      "id": 200700001,
+      "title": "Machine Learning Engineer",
+      "location": {"name": "Remote"},
+      "absolute_url": "https://jobs.apple.com/en-us/details/200700001",
+      "content": "<p>Build ML systems at scale.</p>"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "abc-1234-def",
+    "text": "Senior Data Scientist",
+    "categories": {
+      "location": "Tel Aviv, Israel",
+      "commitment": "Full-time",
+      "team": "Data"
+    },
+    "hostedUrl": "https://jobs.lever.co/waze/abc-1234-def",
+    "descriptionPlain": "Join Waze's data team to build predictive models on real-time navigation data.",
+    "createdAt": 1700000000000
+  }
+]

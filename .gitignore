@@ -1,0 +1,14 @@
+data/
+review/
+*.db
+*-plan.md
+
+# Python
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+.venv/

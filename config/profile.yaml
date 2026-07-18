@@ -1,0 +1,145 @@
+# config/profile.yaml
+# The anchor the ranker scores every posting against.
+# Edit freely — this file is meant to drift as the search narrows.
+
+identity:
+  name: Gal Kepler
+  headline: Computational neuroscientist & Data Scientist, PhD
+  location: Petach Tikva, Israel
+  work_modes: [onsite, hybrid, remote]
+  commute_radius: Greater Tel Aviv area   # for onsite/hybrid roles
+  relocation: false
+
+# ---------------------------------------------------------------
+# Level anchor. The ranker compares each posting's inferred level
+# against this. Anchoring BELOW this is the known failure mode.
+# ---------------------------------------------------------------
+level:
+  anchor: senior_ic          # mid_ic | senior_ic | staff_ic
+  acceptable: [mid_ic, senior_ic, staff_ic, mid_ic_at_top_tier]
+  credentials_supporting_anchor:
+    - PhD-level computational neuroscience
+    - 6+ years production ML
+    - First-author manuscript under review at Nature Communications
+    - Shipped production platform (~4,500 participants, ~6,000 sessions)
+    - Co-author, "Python for Neuroscientists"; teaches Python & ML at TAU
+
+# ---------------------------------------------------------------
+# Target role families, in rough priority order.
+# ---------------------------------------------------------------
+target_roles:
+  - family: ml_engineer
+    titles: [Machine Learning Engineer, ML Engineer, Applied Scientist]
+    weight: 0.8
+  - family: research_scientist
+    titles: [Research Scientist, Research Engineer, Applied Research Scientist]
+    weight: 1.0
+    note: strongest domain fit — computational neuroscience, neuroimaging, health data
+  - family: biosignals_health
+    titles: [Biosignal Researcher, Health Data Scientist, Sensing Researcher,
+             Interdisciplinary Researcher]
+    weight: 1.0
+    note: strongest domain fit — wearables, weak-signal sensing, physiological time series
+  - family: data_scientist
+    titles: [Senior Data Scientist, Staff Data Scientist]
+    weight: 1.0
+    note: strongest domain fit — data analysis, statistical modeling, machine learning
+  - family: llm_eval
+    titles: [LLM Engineer, Evaluation Engineer, AI Engineer, Agent Engineer]
+    weight: 0.9
+    note: hero artifact here is the six-check deterministic eval harness
+
+# ---------------------------------------------------------------
+# What makes a posting score high.
+# ---------------------------------------------------------------
+signals_positive:
+  strong:
+    - physiological / biosignal / wearable / sensor time-series data
+    - model evaluation, eval harnesses, LLM reliability & faithfulness
+    - end-to-end ownership (research → production, not research-only)
+    - neuroimaging, medical imaging, or health data
+    - Python-first ML stack (sklearn, PyTorch, pandas)
+    - statistical modeling, causal inference, mixed models
+  moderate:
+    - agentic LLM systems, RAG, retrieval grounding
+    - data/ML infrastructure, pipeline orchestration, MLOps
+    - scientific computing / research engineering
+    - published-research culture, conference/paper support
+
+signals_negative:
+  - pure frontend or pure web development
+  - heavy sales/customer-facing engineering
+  - roles with no modeling component (pure data engineering / BI reporting)
+  - "wear many hats" seed-stage generalist roles with no ML focus
+
+# ---------------------------------------------------------------
+# Dealbreakers — the ranker HARD-FLAGS these, per CLAUDE.md.
+# ---------------------------------------------------------------
+dealbreakers:
+  - id: junior_level
+    match: [entry-level, junior, "0-2 years", "1-3 years", graduate program, intern]
+    action: hard_flag
+    rationale: >
+      Previously rejected for overqualification (Intuit FILM). Applying below
+      level burns time and signals a weak anchor. Requires an explicit strategic
+      reason to survive the filter.
+  - id: people_management
+    match: [manage a team, direct reports, hire and grow, "Head of", "Director of",
+            Engineering Manager, Team Lead]
+    action: hard_flag
+    rationale: >
+      No direct-report experience — seniority/shape mismatch (cf. OneStep Head of
+      Research). If flagged, check whether a parallel Senior/Staff IC track exists
+      at the same company and surface that instead.
+  - id: relocation_required
+    match: [relocation required, must be based in]
+    action: hard_flag
+    rationale: Partner's work situation constrains relocation.
+
+# ---------------------------------------------------------------
+# Compensation posture (used for context in the review queue,
+# never sent anywhere).
+# ---------------------------------------------------------------
+compensation:
+  posture: do_not_anchor_low
+  note: >
+    Credentials (PhD, Nature Communications submission, production ML
+    infrastructure, shipped eval harness) support a senior band. If a posting
+    states a range, surface it in the review queue; if it's below the senior
+    band, flag rather than auto-skip.
+
+# ---------------------------------------------------------------
+# Ranking mechanics.
+# ---------------------------------------------------------------
+ranking:
+  scale: 0-10
+  threshold_advance: 6        # >= this moves to matching + generation
+  threshold_surface: 4        # 4-5 shown in queue as "borderline"
+  hard_flag_penalty: -4       # applied per dealbreaker hit
+  outputs:
+    - relevance_score
+    - level_match            # junior | match | stretch
+    - one_line_rationale
+    - dealbreakers_hit
+
+# ---------------------------------------------------------------
+# Companies to always watch (seed for config/sources.yaml).
+# ---------------------------------------------------------------
+watchlist:
+  - Apple
+  - Google
+  - Microsoft
+  - Meta
+  - Waze
+  - Aidoc
+  - Navina
+  - Checkout.com
+  - Samsung (AFSL)
+  - Zendesk
+  # add more as the search evolves
+
+# In-flight — don't surface competing roles at these as "new" without a note.
+active_processes:
+  - company: Apple
+    role: Interdisciplinary Researcher (req 200666013)
+    stage: final rounds / recruiter level-setting

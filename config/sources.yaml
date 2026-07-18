@@ -1,0 +1,23 @@
+# config/sources.yaml
+# Seed list of companies and their ATS platform.
+# Add / remove companies here; the source runner polls all of them.
+
+greenhouse:
+  - apple         # req 200666013 in-flight — see profile.yaml active_processes
+  - google
+  - microsoft
+  - meta
+  - zendesk
+  - checkout-com
+
+lever:
+  - waze
+
+ashby:
+  - aidoc
+  - navina
+
+# "careers" entries use the generic HTML fetch path (Stage 1 fallback).
+# careers:
+#   - name: Samsung AFSL
+#     url: https://research.samsung.com/careers

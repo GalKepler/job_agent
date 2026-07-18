@@ -1,0 +1,20 @@
+{
+  "jobPostings": [
+    {
+      "id": "xyz-5678-uvw",
+      "title": "Research Scientist",
+      "locationName": "Tel Aviv, Israel",
+      "isRemote": false,
+      "jobUrl": "https://jobs.ashbyhq.com/aidoc/xyz-5678-uvw",
+      "descriptionHtml": "<p>Join Aidoc's research team to develop AI for medical imaging.</p>"
+    },
+    {
+      "id": "xyz-9999-zzz",
+      "title": "Senior ML Engineer",
+      "locationName": "Remote",
+      "isRemote": true,
+      "jobUrl": "https://jobs.ashbyhq.com/aidoc/xyz-9999-zzz",
+      "descriptionHtml": "<p>Build production ML pipelines.</p>"
+    }
+  ]
+}
