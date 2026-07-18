@@ -12,6 +12,7 @@ dependencies = [
     "sqlalchemy>=2",
     "pyyaml",
     "httpx",
+    "python-dotenv",
     "rapidfuzz",   # fuzzy company-name matching in Stage 3
 ]
 
