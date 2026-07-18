@@ -31,6 +31,25 @@ class Posting(Base):
     status: Mapped[str] = mapped_column(String(32), default="new")
     raw_json: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Stage 2 — ranking
+    relevance_score: Mapped[int | None] = mapped_column(default=None)
+    level_match: Mapped[str | None] = mapped_column(String(32), default=None)
+    rationale: Mapped[str | None] = mapped_column(Text, default=None)
+    dealbreakers_hit: Mapped[str | None] = mapped_column(Text, default=None)  # JSON list
+    # Stage 3 — network matching
+    connections_json: Mapped[str | None] = mapped_column(Text, default=None)  # JSON list
+    # Stage 4 — generation
+    generated_content: Mapped[str | None] = mapped_column(Text, default=None)
+
+
+_RANK_COLUMNS = [
+    "relevance_score INTEGER",
+    "level_match TEXT",
+    "rationale TEXT",
+    "dealbreakers_hit TEXT",
+    "connections_json TEXT",
+    "generated_content TEXT",
+]
 
 
 def get_engine(db_path: Path = DB_PATH) -> Any:
@@ -40,7 +59,19 @@ def get_engine(db_path: Path = DB_PATH) -> Any:
         conn.execute(text("PRAGMA journal_mode=WAL"))
         conn.commit()
     Base.metadata.create_all(engine)
+    _migrate_rank_columns(engine)
     return engine
+
+
+def _migrate_rank_columns(engine: Any) -> None:
+    """Add Stage-2 ranking columns to existing DBs (idempotent)."""
+    with engine.connect() as conn:
+        for col_def in _RANK_COLUMNS:
+            try:
+                conn.execute(text(f"ALTER TABLE postings ADD COLUMN {col_def}"))
+                conn.commit()
+            except Exception:
+                conn.rollback()  # column already exists — ignore
 
 
 def make_dedup_hash(company_slug: str, title: str, location: str) -> str:
