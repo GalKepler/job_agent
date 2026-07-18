@@ -18,11 +18,17 @@ class AshbySource:
     def fetch(self) -> list[RawPosting]:
         url = f"https://api.ashbyhq.com/posting-api/job-board/{self.company_slug}"
         resp = httpx.get(url, timeout=30)
+        if resp.status_code == 404:
+            log.warning("ashby/%s: board not found (404) — check slug", self.company_slug)
+            return []
         resp.raise_for_status()
         data = resp.json()
+        # API returns either "jobs" (current) or "jobPostings" (legacy)
+        jobs = data.get("jobs") or data.get("jobPostings") or []
         postings = []
-        for job in data.get("jobPostings", []):
-            location = job.get("locationName", "") or ""
+        for job in jobs:
+            # "jobs" shape uses "location" (str); "jobPostings" shape uses "locationName"
+            location = job.get("location") or job.get("locationName") or ""
             remote = bool(job.get("isRemote")) or "remote" in location.lower()
             postings.append(
                 RawPosting(

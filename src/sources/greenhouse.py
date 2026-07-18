@@ -18,6 +18,9 @@ class GreenhouseSource:
     def fetch(self) -> list[RawPosting]:
         url = f"https://boards-api.greenhouse.io/v1/boards/{self.company_slug}/jobs"
         resp = httpx.get(url, timeout=30)
+        if resp.status_code == 404:
+            log.warning("greenhouse/%s: board not found (404) — check slug", self.company_slug)
+            return []
         resp.raise_for_status()
         data = resp.json()
         postings = []

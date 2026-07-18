@@ -18,6 +18,9 @@ class LeverSource:
     def fetch(self) -> list[RawPosting]:
         url = f"https://api.lever.co/v0/postings/{self.company_slug}?mode=json"
         resp = httpx.get(url, timeout=30)
+        if resp.status_code == 404:
+            log.warning("lever/%s: board not found (404) — check slug", self.company_slug)
+            return []
         resp.raise_for_status()
         postings = []
         for job in resp.json():

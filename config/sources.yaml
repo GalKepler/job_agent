@@ -1,23 +1,26 @@
 # config/sources.yaml
-# Seed list of companies and their ATS platform.
-# Add / remove companies here; the source runner polls all of them.
+# Company slugs to poll. All slugs verified against live API (2026-07-18).
+# Add companies here; the source runner polls all of them.
+#
+# Note: Apple / Google / Microsoft / Meta use proprietary career portals —
+# they don't expose Greenhouse / Lever / Ashby boards. Add them via a
+# "careers" scraper or SerpAPI in a later stage.
 
 greenhouse:
-  - apple         # req 200666013 in-flight — see profile.yaml active_processes
-  - google
-  - microsoft
-  - meta
-  - zendesk
-  - checkout-com
-
-lever:
-  - waze
+  - deepmind       # 10 postings — research-heavy, strong fit
+  - databricks     # 789 postings — ML infra / data
+  - elastic        # 177 postings — search/data infra
+  - twilio         # 165 postings
 
 ashby:
-  - aidoc
-  - navina
+  - openai         # 723 postings
+  - cohere         # 138 postings — NLP/LLM, strong fit
 
-# "careers" entries use the generic HTML fetch path (Stage 1 fallback).
-# careers:
-#   - name: Samsung AFSL
-#     url: https://research.samsung.com/careers
+lever: []
+
+# Unresolved — slugs need lookup from company careers pages:
+# - waze (Google-owned, likely careers.google.com)
+# - aidoc (Israeli health-tech — check careers page for ATS)
+# - navina (Israeli health-tech — check careers page for ATS)
+# - checkout.com (fintech — check careers page for ATS)
+# - zendesk (CX SaaS — check careers page for ATS)
