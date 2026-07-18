@@ -6,12 +6,12 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-import anthropic
 from dotenv import load_dotenv
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.db import Posting, get_engine
+from src.llm import chat_call, default_gen_model, make_client
 
 load_dotenv()
 
@@ -19,12 +19,9 @@ log = logging.getLogger(__name__)
 
 SKILL_PATH = Path("skills/cv-tailoring.skill")
 MASTER_CV_PATH = Path("data/master_cv.md")
-# ponytail: sonnet for generation quality; haiku is fine for ranking but skill output matters
-_DEFAULT_MODEL = "claude-sonnet-4-6"
 
 
 def _read_skill(skill_path: Path) -> tuple[str, str]:
-    """Extract SKILL.md and positioning.md from the skill zip."""
     with zipfile.ZipFile(skill_path) as zf:
         skill_md = zf.read("cv-tailoring/SKILL.md").decode()
         positioning_md = zf.read("cv-tailoring/references/positioning.md").decode()
@@ -62,8 +59,8 @@ def generate_postings(
     engine: Any = None,
     master_cv_path: Path = MASTER_CV_PATH,
     skill_path: Path = SKILL_PATH,
-    client: anthropic.Anthropic | None = None,
-    model: str = _DEFAULT_MODEL,
+    client: Any = None,
+    model: str | None = None,
 ) -> int:
     """Run the cv-tailoring skill for each matched posting.
 
@@ -78,7 +75,9 @@ def generate_postings(
         )
         return 0
     if client is None:
-        client = anthropic.Anthropic()
+        client = make_client()
+    if model is None:
+        model = default_gen_model()
 
     master_cv = master_cv_path.read_text()
     skill_md, positioning_md = _read_skill(skill_path)
@@ -92,23 +91,9 @@ def generate_postings(
         count = 0
         for p in postings:
             try:
-                resp = client.messages.create(
-                    model=model,
-                    max_tokens=4096,
-                    system=skill_md,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": _build_user_message(p, master_cv, positioning_md),
-                        }
-                    ],
+                content = chat_call(
+                    client, model, skill_md, _build_user_message(p, master_cv, positioning_md)
                 )
-                text_block = next(
-                    (b for b in resp.content if getattr(b, "type", None) == "text"), None
-                )
-                if text_block is None:
-                    raise RuntimeError("No text block in response")
-                content: str = text_block.text  # type: ignore[union-attr]
             except Exception as exc:
                 log.warning("generate: id=%d failed — %s", p.id, exc)
                 continue

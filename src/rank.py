@@ -3,62 +3,25 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-import anthropic
 import yaml
-from anthropic.types import ToolChoiceToolParam, ToolParam
 from dotenv import load_dotenv
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.db import Posting, get_engine
+from src.llm import default_rank_model, make_client, score_posting_call
 
 load_dotenv()
 
 log = logging.getLogger(__name__)
 
 _PROFILE_PATH = Path("config/profile.yaml")
-# ponytail: haiku is cheap enough for per-posting ranking; swap to sonnet if quality is poor
-_DEFAULT_MODEL = "claude-haiku-4-5-20251001"
-
-_SCORE_TOOL: ToolParam = {
-    "name": "score_posting",
-    "description": "Score a job posting against the candidate profile.",
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "relevance_score": {
-                "type": "integer",
-                "description": "Raw fit score 0-10 before dealbreaker penalties.",
-            },
-            "level_match": {
-                "type": "string",
-                "enum": ["junior", "match", "stretch"],
-                "description": "junior=below anchor, match=appropriate, stretch=above anchor",
-            },
-            "one_line_rationale": {
-                "type": "string",
-                "description": "One sentence explaining the score.",
-            },
-            "dealbreakers_hit": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Dealbreaker ids triggered (empty list if none).",
-            },
-        },
-        "required": [
-            "relevance_score",
-            "level_match",
-            "one_line_rationale",
-            "dealbreakers_hit",
-        ],
-    },
-}
 
 
 def _build_prompt(profile: dict[str, Any], posting: Posting) -> str:
-    _keys = (
+    keys = (
         "level",
         "target_roles",
         "signals_positive",
@@ -66,11 +29,11 @@ def _build_prompt(profile: dict[str, Any], posting: Posting) -> str:
         "dealbreakers",
         "ranking",
     )
-    key = {k: profile[k] for k in _keys}
+    subset = {k: profile[k] for k in keys}
     return f"""Score this job posting against the candidate profile.
 
 ## Candidate Profile
-{yaml.dump(key, allow_unicode=True, sort_keys=False)}
+{yaml.dump(subset, allow_unicode=True, sort_keys=False)}
 
 ## Job Posting
 Company: {posting.company}
@@ -89,39 +52,23 @@ Call score_posting with your assessment.
 """
 
 
-def _score_one(
-    client: anthropic.Anthropic,
-    model: str,
-    profile: dict[str, Any],
-    posting: Posting,
-) -> dict[str, Any]:
-    resp = client.messages.create(
-        model=model,
-        max_tokens=512,
-        tools=[_SCORE_TOOL],
-        tool_choice=ToolChoiceToolParam(type="tool", name="score_posting"),
-        messages=[{"role": "user", "content": _build_prompt(profile, posting)}],
-    )
-    for block in resp.content:
-        if block.type == "tool_use" and block.name == "score_posting":
-            return cast(dict[str, Any], block.input)
-    raise RuntimeError(f"No score_posting block in response: {resp}")
-
-
 def rank_postings(
     engine: Any = None,
     profile_path: Path = _PROFILE_PATH,
-    client: anthropic.Anthropic | None = None,
-    model: str = _DEFAULT_MODEL,
+    client: Any = None,
+    model: str | None = None,
 ) -> int:
     """Score all 'new' postings; advance to 'ranked' (≥ threshold) or 'skipped'."""
     if engine is None:
         engine = get_engine()
+    if client is None:
+        client = make_client()
+    if model is None:
+        model = default_rank_model()
+
     profile: dict[str, Any] = yaml.safe_load(profile_path.read_text())
     threshold: int = profile["ranking"]["threshold_advance"]
     penalty: int = abs(profile["ranking"]["hard_flag_penalty"])
-    if client is None:
-        client = anthropic.Anthropic()
 
     with Session(engine) as session:
         postings = list(session.scalars(select(Posting).where(Posting.status == "new")))
@@ -132,7 +79,7 @@ def rank_postings(
         scored = 0
         for p in postings:
             try:
-                result = _score_one(client, model, profile, p)
+                result = score_posting_call(client, model, _build_prompt(profile, p))
             except Exception as exc:
                 log.warning("rank: posting id=%d failed — %s", p.id, exc)
                 continue

@@ -14,6 +14,7 @@ dependencies = [
     "httpx",
     "python-dotenv",
     "rapidfuzz",   # fuzzy company-name matching in Stage 3
+    "openai>=1.0", # Ollama OpenAI-compat endpoint
 ]
 
 [project.optional-dependencies]
