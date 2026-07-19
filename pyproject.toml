@@ -40,5 +40,9 @@ testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
+    "ipykernel>=7.3.0",
+    "jupyterlab>=4.6.1",
+    "matplotlib>=3.11.1",
+    "pandas>=3.0.3",
     "types-pyyaml>=6.0.12.20260518",
 ]
