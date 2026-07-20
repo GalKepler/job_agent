@@ -92,9 +92,12 @@ dealbreakers:
       Research). If flagged, check whether a parallel Senior/Staff IC track exists
       at the same company and surface that instead.
   - id: relocation_required
-    match: [relocation required, must be based in]
+    match: [relocation required, must be based in, on-site, onsite, in-office]
     action: hard_flag
-    rationale: Partner's work situation constrains relocation.
+    rationale: >
+      Candidate is based in Petach Tikva, Israel; relocation: false.
+      Flag any role whose location is outside Israel AND is not remote.
+      A posting in London, New York, Berlin, etc. with no remote option requires relocation — hard-flag it.
 
 # ---------------------------------------------------------------
 # Compensation posture (used for context in the review queue,

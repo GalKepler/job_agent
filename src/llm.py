@@ -51,30 +51,6 @@ _SCORE_TOOL_ANTHROPIC: Any = {
     },
 }
 
-# OpenAI-compat tool schema (used when PROVIDER=ollama or any OAI endpoint)
-_SCORE_TOOL_OAI: Any = {
-    "type": "function",
-    "function": {
-        "name": "score_posting",
-        "description": "Score a job posting against the candidate profile.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "relevance_score": {"type": "integer"},
-                "level_match": {"type": "string", "enum": ["junior", "match", "stretch"]},
-                "one_line_rationale": {"type": "string"},
-                "dealbreakers_hit": {"type": "array", "items": {"type": "string"}},
-            },
-            "required": [
-                "relevance_score",
-                "level_match",
-                "one_line_rationale",
-                "dealbreakers_hit",
-            ],
-        },
-    },
-}
-
 
 def make_client() -> Any:
     """Return the appropriate LLM client based on LLM_PROVIDER."""
@@ -130,15 +106,23 @@ def _is_openai(client: Any) -> bool:
     return type(client).__module__.startswith("openai")
 
 
+_JSON_SYSTEM = (
+    "You are a job-fit scorer. Respond with ONLY a JSON object — no prose, no markdown. "
+    'Required keys: "relevance_score" (integer 0-10), "level_match" ("junior"|"match"|"stretch"), '
+    '"one_line_rationale" (string), "dealbreakers_hit" (array of strings).'
+)
+
+
 def _score_oai(client: Any, model: str, prompt: str) -> dict[str, Any]:
     resp = client.chat.completions.create(
         model=model,
-        tools=[_SCORE_TOOL_OAI],
-        tool_choice={"type": "function", "function": {"name": "score_posting"}},
-        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": _JSON_SYSTEM},
+            {"role": "user", "content": prompt},
+        ],
     )
-    call = resp.choices[0].message.tool_calls[0]
-    return cast(dict[str, Any], json.loads(call.function.arguments))
+    return cast(dict[str, Any], json.loads(resp.choices[0].message.content or "{}"))
 
 
 def _score_anthropic(client: Any, model: str, prompt: str) -> dict[str, Any]:

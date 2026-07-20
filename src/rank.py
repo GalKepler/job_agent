@@ -5,15 +5,16 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import yaml
 from dotenv import load_dotenv
+
+load_dotenv()
+
+import yaml
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.db import Posting, get_engine
 from src.llm import default_rank_model, make_client, score_posting_call
-
-load_dotenv()
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ _PROFILE_PATH = Path("config/profile.yaml")
 
 def _build_prompt(profile: dict[str, Any], posting: Posting) -> str:
     keys = (
+        "identity",
         "level",
         "target_roles",
         "signals_positive",
@@ -48,7 +50,7 @@ Location: {posting.location}
 - dealbreakers_hit: list `id` of any dealbreaker whose `match` keywords appear in title/description.
 - one_line_rationale: one sentence, lead with the strongest signal for or against.
 
-Call score_posting with your assessment.
+Provide your assessment.
 """
 
 

@@ -7,13 +7,14 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.db import Posting, get_engine
 from src.llm import chat_call, default_gen_model, make_client
-
-load_dotenv()
 
 log = logging.getLogger(__name__)
 

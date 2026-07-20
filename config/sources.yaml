@@ -18,7 +18,51 @@ ashby:
 
 lever: []
 
-# Unresolved — slugs need lookup from company careers pages:
+# Keyword-search sources — cover any company, no slug needed.
+
+remotive:
+  # Free, no key. All results are remote by definition.
+  search_terms:
+    - "machine learning"
+    - "data scientist"
+    - "research scientist"
+    - "AI engineer"
+
+adzuna:
+  # Official API — register free at developer.adzuna.com.
+  # Set ADZUNA_APP_ID and ADZUNA_APP_KEY env vars; skipped if missing.
+  # Adzuna does NOT have an Israel endpoint. Supported codes include:
+  # gb, us, au, de, fr, ca, in, nz, sg, za. Using gb+us for broad remote coverage.
+  countries: [gb, us]
+  search_terms:
+    - "machine learning"
+    - "data scientist"
+    - "research scientist"
+    - "AI"
+  results_per_page: 50
+  max_pages: 3
+
+hiremetech:
+  # Israeli tech job board — scraping approved by user (2026-07-19).
+  # Open API endpoint, no key required.
+  search_terms:
+    - "machine learning"
+    - "data scientist"
+    - "research scientist"
+    - "AI engineer"
+  max_pages: 5
+  page_size: 50
+
+arbeitnow:
+  # Free, no key. EU + remote focus. Tag vocabulary is generic (not ML-specific);
+  # using broad IT/engineering tags and relying on the ranker to filter quality.
+  tags:
+    - software development
+    - it
+    - engineering
+  max_pages: 5
+
+# Unresolved company-specific slugs (less urgent now that keyword search covers them):
 # - waze (Google-owned, likely careers.google.com)
 # - aidoc (Israeli health-tech — check careers page for ATS)
 # - navina (Israeli health-tech — check careers page for ATS)
